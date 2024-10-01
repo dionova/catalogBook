@@ -1,16 +1,16 @@
 package com.example.catalogBook.controller;
 
-import com.example.catalogBook.model.Author;
-import com.example.catalogBook.service.AuthorService;
+import com.example.catalogBook.model.AuthorDto;
+import com.example.catalogBook.model.AuthorWithBooksDto;
+import com.example.catalogBook.service.interfaces.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
-@RequestMapping("/authors")
+@RequestMapping("/api/authors")
 public class AuthorController {
 
     private final AuthorService authorService;
@@ -20,26 +20,27 @@ public class AuthorController {
         this.authorService = authorService;
     }
 
-    @GetMapping
-    public String listAuthors(Model model) {
-        model.addAttribute("authors", authorService.getAllAuthors());
-        return "authors";
+    @GetMapping("/getAllAuthors")
+    @ResponseBody
+    public List<AuthorDto> getAllAuthors() {
+        List<AuthorDto> result = authorService.getAllAuthors();
+
+        return result;
     }
 
     @GetMapping("/search")
-    public String searchBooks(@RequestParam String name, Model model) {
-        List<Author> authors = authorService.searchAuthorsByName(name);
-        model.addAttribute("authors", authors);
-        return "authors";
+    @ResponseBody
+    public List<AuthorDto> searchAuthorsByName(@RequestParam String name) {
+        List<AuthorDto> result = authorService.searchAuthorsByName(name);
+
+        return result;
     }
 
-    @GetMapping("/{id}")
-    public String viewAuthor(@PathVariable Long id, Model model) {
-        Author author = authorService.getAuthorById(id);
-        if (author != null) {
-            model.addAttribute("author", author);
-            model.addAttribute("books", author.getBooks());
-        }
-        return "author";
+    @GetMapping("/viewAuthorWithBooks/{id}")
+    @ResponseBody
+    public AuthorWithBooksDto viewAuthorAndBook(@PathVariable Long id) {
+        AuthorWithBooksDto result = authorService.getAuthorById(id);
+
+        return result;
     }
 }

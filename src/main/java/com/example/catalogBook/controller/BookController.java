@@ -1,73 +1,57 @@
 package com.example.catalogBook.controller;
 
-import com.example.catalogBook.error.UniqueConstraintViolationException;
-import com.example.catalogBook.model.Book;
-import com.example.catalogBook.service.AuthorService;
-import com.example.catalogBook.service.BookService;
+import com.example.catalogBook.model.AddBookArgs;
+import com.example.catalogBook.exception.UniqueConstraintViolationException;
+import com.example.catalogBook.model.BookDto;
+import com.example.catalogBook.model.BookWithAuthorsDto;
+import com.example.catalogBook.service.interfaces.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 
-@Controller
-@RequestMapping("/books")
+@RestController
+@RequestMapping("/api/books")
 public class BookController {
 
     private final BookService bookService;
-    private final AuthorService authorService;
 
     @Autowired
-    public BookController(BookService bookService, AuthorService authorService) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.authorService = authorService;
     }
 
-    @GetMapping
-    public String listBooks(Model model) {
-        model.addAttribute("books", bookService.getAllBooks());
-        return "books";
+    @GetMapping("/getAllBooks")
+    @ResponseBody
+    public List<BookDto> getAllBooks() {
+        List<BookDto> result = bookService.getAllBooks();
+
+        return result;
     }
 
     @GetMapping("/search")
-    public String searchBooks(@RequestParam String title, Model model) {
-        List<Book> books = bookService.searchBooksByTitle(title);
-        model.addAttribute("books", books);
-        return "books";
+    @ResponseBody
+    public List<BookDto> searchBooksByTitle(@RequestParam String title) {
+        List<BookDto> result = bookService.searchBooksByTitle(title);
+
+        return result;
     }
 
-    @GetMapping("/{id}")
-    public String viewBook(@PathVariable Long id, Model model) {
-        Book book = bookService.getBookById(id);
-        if (book != null) {
-            model.addAttribute("book", book);
-            model.addAttribute("authors", book.getAuthors());
-        }
-        return "book";
+    @GetMapping("/viewBookWithAuthors/{id}")
+    @ResponseBody
+    public BookWithAuthorsDto getBookWithAuthors(@PathVariable Long id, Model model) {
+        BookWithAuthorsDto result = bookService.getBookById(id);
+
+        return result;
     }
 
-    @GetMapping("/add")
-    public String showAddBookForm(Model model) {
-        model.addAttribute("book", new Book());
-        model.addAttribute("authors", authorService.getAllAuthors());
-        return "add_book";
-    }
+    @PostMapping("/addBook")
+    @ResponseBody
+    public BookWithAuthorsDto addBook(@RequestBody AddBookArgs addBookArgs) throws UniqueConstraintViolationException {
+        BookWithAuthorsDto result = bookService.addBook(addBookArgs);
 
-    @PostMapping("/add")
-    public String addBook(@RequestParam String title, @RequestParam List<Long> authorIds, Model model) {
-        Book book = new Book();
-        try {
-            book.setTitle(title);
-            book.setAuthors(authorService.findById(authorIds));
-            bookService.add(book, title, authorIds);
-            model.addAttribute("message", "Книга успешно добавлена!");
-        }
-        catch (UniqueConstraintViolationException ex) {
-            model.addAttribute("errorMessage", ex.getMessage());
-        }
-        model.addAttribute("authors", authorService.getAllAuthors());
-        return "add_book";
+        return result;
     }
 }

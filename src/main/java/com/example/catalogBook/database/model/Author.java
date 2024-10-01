@@ -1,11 +1,7 @@
-package com.example.catalogBook.model;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package com.example.catalogBook.database.model;
 import jakarta.persistence.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 @Entity
 @Table(name = "author")
@@ -14,24 +10,23 @@ public class Author {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private long authorId;
 
     @Column(name = "name")
     private String name;
 
     @ManyToMany(mappedBy = "authors")
-    @JsonIgnoreProperties("authors")
     private List<Book> books;
 
     public Author() {
     }
 
     public long getId() {
-        return id;
+        return authorId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setId(long authorId) {
+        this.authorId = authorId;
     }
 
     public String getName() {
